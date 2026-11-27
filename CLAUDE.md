@@ -8,9 +8,9 @@ An office "ka-ching" sales display. One static page (`index.html`) subscribes to
 
 Currently live for one market, Poland (PLN). Defaults already include PL, SE, DK, FI, EE, UK, ES and CZ (see `defaults.markets` and the README table; keep them in sync). It is designed to become multi-country: each market maps to a currency and a fixed rate to EUR, and totals are summed in EUR.
 
-The PostHog sale event sends only `amount` (local currency) and `market` (e.g. `PL`).
+The PostHog sale event `loan_issued` sends only `amount` (local currency) and `market` (e.g. `PL`).
 
-Data flow: platform → PostHog sale event → PostHog HTTP Webhook destination → `https://ntfy.sh/<topic>` → page via SSE.
+Data flow: platform → PostHog `loan_issued` event → PostHog HTTP Webhook destination → `https://ntfy.sh/<topic>` → page via SSE.
 
 Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/
 

@@ -14,7 +14,7 @@ It is a single static HTML file. There is no backend, no build step and no depen
 Platform ──(sale event)──▶ PostHog ──(HTTP Webhook destination)──▶ ntfy.sh topic ──(live stream)──▶ index.html on the office screen
 ```
 
-1. Our platform already sends a sale event to PostHog.
+1. Our platform already sends a sale event, `loan_issued`, to PostHog.
 2. A PostHog **HTTP Webhook destination** forwards each sale event to an **ntfy.sh topic** URL.
 3. The display page subscribes to that topic with Server-Sent Events and celebrates each message.
 
@@ -36,7 +36,7 @@ In PostHog: **Data pipelines → New → Destination → HTTP Webhook**.
 | --- | --- |
 | Webhook URL | `https://ntfy.sh/<your-topic>` |
 | Method | `POST` |
-| Filter | Only the sale event: `TODO: sale event name` |
+| Filter | Only the `loan_issued` event |
 | Body | See below |
 
 ```json
@@ -46,7 +46,7 @@ In PostHog: **Data pipelines → New → Destination → HTTP Webhook**.
 }
 ```
 
-Our sale event has two properties, `amount` (in the market's local currency) and `market` (e.g. `PL`). Both are required. Optionally add `label` to show a product name. Keep the body small: ntfy.sh limits messages to about 4 KB.
+The `loan_issued` event has two properties, `amount` (in the market's local currency) and `market` (e.g. `PL`). Both are required. Optionally add `label` to show a product name. Keep the body small: ntfy.sh limits messages to about 4 KB.
 
 Use the destination's test button. The display should ka-ching within a few seconds.
 
