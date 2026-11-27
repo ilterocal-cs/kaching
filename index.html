@@ -51,7 +51,8 @@
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
   }
-  button, input { font: inherit; color: inherit; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  .field textarea { resize: vertical; font-variant-numeric: tabular-nums; }
   :focus-visible { outline: 3px solid var(--brass-hi); outline-offset: 3px; }
 
   /* ---------- layout ---------- */
@@ -190,7 +191,7 @@
   .field { display: grid; gap: 6px; }
   .field > span { font-weight: 600; font-size: 15px; }
   .field .hint { font-size: 13px; color: #6B6457; line-height: 1.4; margin: 0; }
-  .field input[type="text"], .field input[type="number"] {
+  .field input[type="text"], .field input[type="number"], .field textarea, .field select {
     border: 1px solid #CFC6B2; border-radius: 8px; padding: 10px 12px; background: #fff; color: var(--ink); width: 100%;
   }
   .row { display: flex; gap: 8px; }
@@ -240,7 +241,7 @@
       </div>
 
       <section class="today" aria-label="Today’s sales">
-        <p class="today-label">Today</p>
+        <p class="today-label" id="todayLabel">Today</p>
         <div class="total" id="total">€0.00</div>
         <div class="count" id="count"><strong>0</strong> sales</div>
       </section>
@@ -280,24 +281,23 @@
         <p class="hint">Keep it long and random. Anyone who knows the topic can see your sales and send fake ones.</p>
       </label>
 
-      <div class="two">
-        <label class="field">
-          <span>Amount field</span>
-          <input type="text" name="field" spellcheck="false">
-          <p class="hint">The field in the message that holds the amount. Use dots for nested fields.</p>
-        </label>
-        <label class="field">
-          <span>Currency</span>
-          <input type="text" name="currency" maxlength="3" spellcheck="false">
-          <p class="hint">Used when a message doesn’t include its own currency.</p>
-        </label>
-      </div>
+      <label class="field">
+        <span>Market</span>
+        <select name="market"></select>
+        <p class="hint">This screen only counts sales from this market.</p>
+      </label>
+
+      <label class="field">
+        <span>Markets and rates</span>
+        <textarea name="markets" rows="8" spellcheck="false"></textarea>
+        <p class="hint">One per line: market, currency, rate to EUR. <code>PL PLN 0.23</code> means 100 PLN counts as €23 in the total.</p>
+      </label>
 
       <div class="two">
         <label class="field">
-          <span>Big sale from</span>
+          <span>Big sale from (EUR)</span>
           <input type="number" name="big" min="0" step="any">
-          <p class="hint">Sales at or above this get a bigger celebration.</p>
+          <p class="hint">Sales worth at least this many euros get a bigger celebration.</p>
         </label>
         <div class="field">
           <span>Sound</span>
@@ -328,21 +328,59 @@
   "use strict";
 
   // ---------- storage ----------
-  const LS_CFG = "kaching.cfg.v1";
-  const LS_DAY = "kaching.day.v1";
+  const LS_CFG = "kaching.cfg.v2";
+  const LS_DAY = "kaching.day.v2";
   const load = (k) => { try { return JSON.parse(localStorage.getItem(k)) || null; } catch { return null; } };
   const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
-  const defaults = { topic: "", field: "amount", currency: "EUR", big: 500, sound: true };
+  // The total is always shown in euros. Each market maps to its local currency
+  // and a rate to EUR: amount in local currency * rate = amount in EUR.
+  const BASE = "EUR";
+  const defaults = {
+    topic: "", market: "PL",
+    // Approximate fixed rates; update by hand in Settings → Markets.
+    markets: {
+      PL: { currency: "PLN", rate: 0.23 },
+      SE: { currency: "SEK", rate: 0.09 },
+      DK: { currency: "DKK", rate: 0.134 },
+      FI: { currency: "EUR", rate: 1 },
+      EE: { currency: "EUR", rate: 1 },
+      UK: { currency: "GBP", rate: 1.17 },
+      ES: { currency: "EUR", rate: 1 },
+      CZ: { currency: "CZK", rate: 0.04 }
+    },
+    big: 500, sound: true
+  };
   let cfg = Object.assign({}, defaults, load(LS_CFG) || {});
+
+  // ---------- markets ----------
+  const MARKET_RE = /^[A-Z]{2,3}$/;
+  const validCurrency = (c) => { try { new Intl.NumberFormat(undefined, { style: "currency", currency: c }); return /^[A-Z]{3}$/.test(c); } catch { return false; } };
+  // Parses "PL PLN 0.23" lines (or "PL:PLN:0.23" items) into { PL: { currency, rate } }.
+  // Returns { markets } or { error }.
+  function parseMarkets(text) {
+    const markets = {};
+    // Commas separate items only before a letter, so "0,23" still works as a rate.
+    const items = String(text).split(/[\n;]+|,(?=\s*[A-Za-z])/).map((s) => s.trim()).filter(Boolean);
+    for (const item of items) {
+      const [m, c, r] = item.split(/[\s:]+/);
+      const market = (m || "").toUpperCase(), currency = (c || "").toUpperCase(), rate = toNum(r || "");
+      if (!MARKET_RE.test(market) || !validCurrency(currency) || !(rate > 0)) return { error: `Can’t read “${item}”. Use: PL PLN 0.23` };
+      markets[market] = { currency, rate };
+    }
+    if (!Object.keys(markets).length) return { error: "Add at least one market, e.g. PL PLN 0.23" };
+    return { markets };
+  }
+  const marketsToText = (ms, sep) => Object.entries(ms).map(([m, v]) => `${m} ${v.currency} ${v.rate}`).join(sep);
 
   // URL parameters override saved settings, so one link can set up any screen.
   const qp = new URLSearchParams(location.search);
   if (qp.get("topic")) cfg.topic = qp.get("topic");
-  if (qp.get("field")) cfg.field = qp.get("field");
-  if (qp.get("currency")) cfg.currency = qp.get("currency").toUpperCase();
+  if (qp.get("markets")) { const r = parseMarkets(qp.get("markets")); if (r.markets) cfg.markets = r.markets; }
+  if (qp.get("market")) cfg.market = qp.get("market").toUpperCase();
   if (qp.get("big") && isFinite(+qp.get("big"))) cfg.big = +qp.get("big");
   if (qp.get("sound") === "0") cfg.sound = false;
+  if (!cfg.markets[cfg.market]) cfg.market = Object.keys(cfg.markets)[0];
   store(LS_CFG, cfg);
 
   const TOPIC_RE = /^[A-Za-z0-9_-]{1,64}$/;
@@ -350,10 +388,12 @@
   // ---------- day state ----------
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
   const startOfDay = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
-  const freshDay = () => ({ key: todayKey(), total: 0, count: 0, ids: [], lastId: null, sales: [] });
+  const freshDay = () => ({ key: todayKey(), topic: cfg.topic, market: cfg.market, total: 0, count: 0, ids: [], lastId: null, sales: [] });
 
+  // A new day, topic or market starts fresh. A fresh day has no lastId, so the
+  // stream is replayed from midnight and today's sales for this market are counted.
   let day = load(LS_DAY);
-  if (!day || day.key !== todayKey()) day = freshDay();
+  if (!day || day.key !== todayKey() || day.topic !== cfg.topic || day.market !== cfg.market) day = freshDay();
   const saveDay = () => store(LS_DAY, day);
 
   let shownTotal = day.total;
@@ -362,7 +402,7 @@
   // ---------- formatting ----------
   const fmtCache = {};
   function fmt(v, cur) {
-    cur = cur || cfg.currency;
+    cur = cur || BASE;
     try {
       fmtCache[cur] = fmtCache[cur] || new Intl.NumberFormat(undefined, { style: "currency", currency: cur });
       return fmtCache[cur].format(v);
@@ -382,6 +422,7 @@
 
   // ---------- rendering ----------
   function renderTotals() {
+    $("todayLabel").textContent = `Today · ${cfg.market}`;
     totalEl.textContent = fmt(shownTotal);
     countEl.innerHTML = `<strong>${shownCount}</strong> ${shownCount === 1 ? "sale" : "sales"}`;
   }
@@ -412,7 +453,8 @@
       const li = document.createElement("li");
       if (i === 0 && freshFirst) li.className = "fresh";
       const t = document.createElement("span"); t.className = "time"; t.textContent = fmtTime(s.t);
-      const l = document.createElement("span"); l.className = "label"; l.textContent = s.label || "";
+      const l = document.createElement("span"); l.className = "label";
+      l.textContent = s.label || "";
       const a = document.createElement("span"); a.className = "amt" + (s.amount < 0 ? " neg" : "");
       a.textContent = (s.amount >= 0 ? "+" : "") + fmt(s.amount, s.currency);
       li.append(t, l, a);
@@ -431,7 +473,6 @@
   }
 
   // ---------- parsing ----------
-  const getPath = (o, p) => p.split(".").reduce((a, k) => (a == null ? undefined : a[k]), o);
   function toNum(v) {
     if (typeof v === "number") return v;
     if (typeof v !== "string") return NaN;
@@ -441,21 +482,22 @@
     else s = s.replace(/,/g, "");
     return parseFloat(s);
   }
+  // Ignores empty strings and unrendered PostHog templates like "{event.properties.x}".
+  const cleanStr = (v) => (typeof v === "string" && v.trim() && !/^\{.*\}$/.test(v.trim())) ? v.trim() : "";
+
+  // Only JSON messages for the selected market count, e.g. {"amount": 199, "market": "PL"}.
+  // Everything else returns null and is ignored.
   function parseSale(text) {
     let obj = null;
     try { obj = JSON.parse(text); } catch {}
-    let amount, currency, label;
-    if (obj && typeof obj === "object") {
-      amount = toNum(getPath(obj, cfg.field));
-      currency = obj.currency;
-      label = obj.label || obj.product || obj.name;
-    } else {
-      amount = toNum(String(text));
-    }
+    if (!obj || typeof obj !== "object") return null;
+    const market = cleanStr(obj.market).toUpperCase();
+    if (market !== cfg.market) return null;
+    const amount = toNum(obj.amount);
     if (!isFinite(amount)) return null;
-    currency = (typeof currency === "string" && /^[A-Za-z]{3}$/.test(currency.trim())) ? currency.trim().toUpperCase() : cfg.currency;
-    label = (typeof label === "string" && !/^\{.*\}$/.test(label.trim())) ? label.trim().slice(0, 60) : "";
-    return { amount, currency, label };
+    const { currency, rate } = cfg.markets[market];
+    const eur = Math.round(amount * rate * 100) / 100;
+    return { amount, currency, market, eur, label: cleanStr(obj.label || obj.product || obj.name).slice(0, 60) };
   }
 
   // ---------- ntfy connection ----------
@@ -498,9 +540,9 @@
     const sale = parseSale(m.message ?? "");
     if (!sale) { saveDay(); return; }
 
-    day.total += sale.amount;
+    day.total += sale.eur;
     day.count += 1;
-    day.sales.unshift({ t: m.time, amount: sale.amount, currency: sale.currency, label: sale.label });
+    day.sales.unshift({ t: m.time, amount: sale.amount, currency: sale.currency, market: sale.market, eur: sale.eur, label: sale.label });
     day.sales = day.sales.slice(0, 60);
     saveDay();
 
@@ -535,7 +577,7 @@
   }
 
   async function celebrate(s, hold) {
-    const big = s.amount >= cfg.big;
+    const big = s.eur >= cfg.big;
     const text = (s.amount >= 0 ? "+" : "") + fmt(s.amount, s.currency);
     windowEl.innerHTML = "";
     windowEl.setAttribute("aria-label", text);
@@ -547,7 +589,9 @@
       t.setAttribute("aria-hidden", "true");
       windowEl.appendChild(t);
     });
-    burstLabel.textContent = s.test ? "Test sale" : (s.label || (big ? "Big sale!" : "New sale"));
+    const title = s.test ? "Test sale" : (s.label || (big ? "Big sale!" : "New sale"));
+    const inEur = s.currency !== BASE ? `≈ ${fmt(s.eur)}` : "";
+    burstLabel.textContent = [title, inEur].filter(Boolean).join(" · ");
     void windowEl.offsetWidth;
     burst.classList.add("on");
     kaching(big);
@@ -717,10 +761,17 @@
     const t = form.topic.value.trim();
     $("hookUrl").textContent = TOPIC_RE.test(t) ? `https://ntfy.sh/${t}` : "Set a topic first";
   }
+  // Fills the market dropdown from a markets object, keeping the selection if it still exists.
+  function fillMarketSelect(markets, selected) {
+    const sel = form.market;
+    sel.innerHTML = "";
+    Object.entries(markets).forEach(([m, v]) => sel.add(new Option(`${m} (${v.currency})`, m)));
+    sel.value = markets[selected] ? selected : Object.keys(markets)[0];
+  }
   function openSettings() {
     form.topic.value = cfg.topic;
-    form.field.value = cfg.field;
-    form.currency.value = cfg.currency;
+    form.markets.value = marketsToText(cfg.markets, "\n");
+    fillMarketSelect(cfg.markets, cfg.market);
     form.big.value = cfg.big;
     form.sound.checked = cfg.sound;
     $("formError").textContent = "";
@@ -728,6 +779,10 @@
     dlg.showModal();
   }
   form.topic.addEventListener("input", updateHook);
+  form.markets.addEventListener("input", () => {
+    const r = parseMarkets(form.markets.value);
+    if (r.markets) fillMarketSelect(r.markets, form.market.value);
+  });
   $("genBtn").addEventListener("click", () => { form.topic.value = randomTopic(); updateHook(); });
   $("copyBtn").addEventListener("click", async () => {
     const t = $("hookUrl").textContent;
@@ -738,7 +793,8 @@
     audio();
     const amount = Math.round((20 + Math.random() * 180) * 100) / 100;
     dlg.close();
-    queue.push({ amount, currency: form.currency.value.trim().toUpperCase() || cfg.currency, label: "", test: true });
+    const m = cfg.markets[cfg.market];
+    queue.push({ amount, currency: m.currency, market: cfg.market, eur: Math.round(amount * m.rate * 100) / 100, label: "", test: true });
     runQueue();
   });
   $("resetBtn").addEventListener("click", () => {
@@ -752,20 +808,22 @@
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const topic = form.topic.value.trim();
-    const currency = form.currency.value.trim().toUpperCase() || "EUR";
     if (!TOPIC_RE.test(topic)) { $("formError").textContent = "Use 1–64 letters, numbers, dashes or underscores for the topic."; return; }
-    try { new Intl.NumberFormat(undefined, { style: "currency", currency }); }
-    catch { $("formError").textContent = "Use a three-letter currency code, such as EUR or USD."; return; }
-    const changedTopic = topic !== cfg.topic;
+    const parsed = parseMarkets(form.markets.value);
+    if (parsed.error) { $("formError").textContent = parsed.error; return; }
+    const market = form.market.value;
+    if (!parsed.markets[market]) { $("formError").textContent = "Pick a market from the list."; return; }
+    const changedStream = topic !== cfg.topic || market !== cfg.market;
     cfg = {
       topic,
-      field: form.field.value.trim() || "amount",
-      currency,
+      market,
+      markets: parsed.markets,
       big: isFinite(+form.big.value) && form.big.value !== "" ? +form.big.value : defaults.big,
       sound: form.sound.checked
     };
     store(LS_CFG, cfg);
-    if (changedTopic) { day = freshDay(); saveDay(); shownTotal = 0; shownCount = 0; renderRoll(false); }
+    // New topic or market: start a fresh day; connect() then replays today from midnight.
+    if (changedStream) { day = freshDay(); saveDay(); shownTotal = 0; shownCount = 0; renderRoll(false); }
     renderTotals();
     dlg.close();
     connect();
