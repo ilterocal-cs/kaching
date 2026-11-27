@@ -19,6 +19,7 @@ Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/
 - **Single file, no build.** All HTML, CSS and JS live in `index.html`. No bundler, framework, npm packages or transpilation. It must work by opening the file from GitHub Pages.
 - **No backend.** ntfy.sh is the only relay. Don't add servers, serverless functions or API keys without the user asking.
 - **No secrets in the repo.** The repo is public. Never commit a topic name, PostHog key or token. The topic comes from the URL (`?topic=`) or the settings dialog and is stored in `localStorage`.
+- **Keep `<meta name="robots" content="noindex, nofollow">`** in `index.html` so search engines don't index the live page.
 - **No audio or image files.** The sound is synthesized with the Web Audio API and coins are drawn on a canvas. Keep it that way unless asked.
 - **Only external resources:** ntfy.sh (the data) and Google Fonts (Big Shoulders Display, Instrument Sans), with system font fallbacks. The page must still work if fonts fail to load.
 
