@@ -9,41 +9,43 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <!-- build:assets -->
-<link rel="stylesheet" href="./assets/css/style.css?v=b7e9fbf6c7">
+<link rel="stylesheet" href="./assets/css/style.css?v=187a33b9cf">
 <script type="importmap">
 {
   "imports": {
-    "./assets/js/celebrate.js": "./assets/js/celebrate.js?v=209f1c7ceb",
+    "./assets/js/celebrate.js": "./assets/js/celebrate.js?v=2e5181635c",
     "./assets/js/coins.js": "./assets/js/coins.js?v=a8e2063186",
     "./assets/js/config.js": "./assets/js/config.js?v=ccd9f89d79",
     "./assets/js/day.js": "./assets/js/day.js?v=bd143f4326",
+    "./assets/js/flags.js": "./assets/js/flags.js?v=ebd87b5dd2",
     "./assets/js/ledger.js": "./assets/js/ledger.js?v=4180bac6ba",
     "./assets/js/main.js": "./assets/js/main.js?v=7c88f521e5",
     "./assets/js/ntfy.js": "./assets/js/ntfy.js?v=544dd47cea",
     "./assets/js/qr.js": "./assets/js/qr.js?v=231b294bb3",
     "./assets/js/sales.js": "./assets/js/sales.js?v=36f6c23cb9",
     "./assets/js/screen.js": "./assets/js/screen.js?v=86566453f2",
-    "./assets/js/settings.js": "./assets/js/settings.js?v=9a7f0513f6",
+    "./assets/js/settings.js": "./assets/js/settings.js?v=d9f5604405",
     "./assets/js/sound.js": "./assets/js/sound.js?v=4b4d52e08f",
     "./assets/js/storage.js": "./assets/js/storage.js?v=638f8f3968",
-    "./assets/js/ui.js": "./assets/js/ui.js?v=00d0ddc3ff",
+    "./assets/js/ui.js": "./assets/js/ui.js?v=db72ff6669",
     "./assets/js/util.js": "./assets/js/util.js?v=5ab5608aef"
   }
 }
 </script>
-<link rel="modulepreload" href="./assets/js/celebrate.js?v=209f1c7ceb">
+<link rel="modulepreload" href="./assets/js/celebrate.js?v=2e5181635c">
 <link rel="modulepreload" href="./assets/js/coins.js?v=a8e2063186">
 <link rel="modulepreload" href="./assets/js/config.js?v=ccd9f89d79">
 <link rel="modulepreload" href="./assets/js/day.js?v=bd143f4326">
+<link rel="modulepreload" href="./assets/js/flags.js?v=ebd87b5dd2">
 <link rel="modulepreload" href="./assets/js/ledger.js?v=4180bac6ba">
 <link rel="modulepreload" href="./assets/js/ntfy.js?v=544dd47cea">
 <link rel="modulepreload" href="./assets/js/qr.js?v=231b294bb3">
 <link rel="modulepreload" href="./assets/js/sales.js?v=36f6c23cb9">
 <link rel="modulepreload" href="./assets/js/screen.js?v=86566453f2">
-<link rel="modulepreload" href="./assets/js/settings.js?v=9a7f0513f6">
+<link rel="modulepreload" href="./assets/js/settings.js?v=d9f5604405">
 <link rel="modulepreload" href="./assets/js/sound.js?v=4b4d52e08f">
 <link rel="modulepreload" href="./assets/js/storage.js?v=638f8f3968">
-<link rel="modulepreload" href="./assets/js/ui.js?v=00d0ddc3ff">
+<link rel="modulepreload" href="./assets/js/ui.js?v=db72ff6669">
 <link rel="modulepreload" href="./assets/js/util.js?v=5ab5608aef">
 <script type="module" src="./assets/js/main.js?v=7c88f521e5"></script>
 <!-- /build:assets -->
@@ -65,15 +67,15 @@
         </div>
       </div>
 
-      <section class="today" aria-label="Today’s sales">
-        <p class="today-label" id="todayLabel">Today</p>
+      <section class="today" aria-label="Today’s loans issued">
+        <p class="today-label"><span class="flag" id="flag" aria-hidden="true"></span><span id="todayLabel">Today</span></p>
         <div class="total" id="total">€0.00</div>
-        <div class="count" id="count"><strong>0</strong> sales</div>
+        <div class="count" id="count"><strong>0</strong> loans issued</div>
       </section>
     </main>
 
     <div class="side">
-      <aside class="roll" aria-label="Recent sales">
+      <aside class="roll" aria-label="Recent loans">
         <h2>Till roll</h2>
         <p class="sub" id="rollDate"></p>
         <ol id="rollList"></ol>
@@ -109,13 +111,13 @@
           <input type="text" name="topic" autocomplete="off" spellcheck="false" placeholder="e.g. kaching-x7f2q9…">
           <button type="button" class="btn" id="genBtn">Generate</button>
         </div>
-        <p class="hint">Keep it long and random. Anyone who knows the topic can see your sales and send fake ones.</p>
+        <p class="hint">Keep it long and random. Anyone who knows the topic can see your loans and send fake ones.</p>
       </label>
 
       <label class="field">
         <span>Market</span>
         <select name="market"></select>
-        <p class="hint">This screen only counts sales from this market.</p>
+        <p class="hint">This screen only counts loans from this market.</p>
       </label>
 
       <label class="field">
@@ -126,9 +128,9 @@
 
       <div class="two">
         <label class="field">
-          <span>Big sale from (EUR)</span>
+          <span>Big loan from (EUR)</span>
           <input type="number" name="big" min="0" step="any">
-          <p class="hint">Sales worth at least this many euros get a bigger celebration.</p>
+          <p class="hint">Loans worth at least this many euros get a bigger celebration.</p>
         </label>
         <div class="field">
           <span>Sound</span>
@@ -146,7 +148,7 @@
 
       <div class="actions">
         <div class="left">
-          <button type="button" class="btn" id="testBtn">Play a test sale</button>
+          <button type="button" class="btn" id="testBtn">Play a test loan</button>
           <button type="button" class="btn danger" id="resetBtn">Reset today</button>
         </div>
         <button type="submit" class="btn primary" id="saveBtn">Save</button>

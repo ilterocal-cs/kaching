@@ -1,6 +1,6 @@
 # Ka-ching
 
-A full-screen sales display for the office. Every time a sale happens on our platform, the screen plays a cash-register "ka-ching", pops the amount up in register-style number tabs, and showers the screen with coins. Between sales it shows today's total in euros, the number of sales, and a "till roll" of recent sales.
+A full-screen sales display for the office. Every time a sale happens on our platform, the screen plays a cash-register "ka-ching", pops the amount up in register-style number tabs, and showers the screen with coins. Between sales it shows the market's flag, today's total in euros, the number of loans issued, and a "till roll" of recent loans.
 
 It currently runs for Poland (PLN), with seven more markets already set up for later. Each market has its own currency and a rate to EUR, and the daily total is summed in EUR.
 
@@ -91,7 +91,7 @@ Each market maps to a local currency and a rate to EUR:
 
 These are the built-in defaults. Edit the list in **Settings → Markets and rates** (one per line, `PL PLN 0.23`) or with the `markets` URL parameter. To add a country, add a line, e.g. `NO NOK 0.085`; it then appears in the **Market** dropdown.
 
-**Each screen shows one market.** Pick it in **Settings → Market** or with `?market=PL`. All markets can post to the same ntfy topic; a screen ignores sales from other markets. Changing the market starts a fresh day and re-reads today's sales for the new market from ntfy.
+**Each screen shows one market,** with its flag next to the "Today" label. Pick it in **Settings → Market** or with `?market=PL`. Markets you add yourself show no flag until one is added in `public/assets/js/flags.js`. All markets can post to the same ntfy topic; a screen ignores sales from other markets. Changing the market starts a fresh day and re-reads today's sales for the new market from ntfy.
 
 - Each sale is shown in its local currency (e.g. `+199,00 zł`). The celebration also shows the EUR value.
 - The daily total and the big-sale threshold are in EUR.
@@ -131,7 +131,7 @@ brew install cloudflared   # once
 
 It prints a free `https://….trycloudflare.com` URL (no account needed) that serves your local `public/` folder; reload to see edits (run `node build.mjs` after changing assets). Only `public/` is served, the same as on GitHub Pages. The URL changes on every run and stops when you press Ctrl+C, so use GitHub Pages for the office screen.
 
-**Settings → Play a test sale** runs the celebration locally without touching ntfy or the totals.
+**Settings → Play a test loan** runs the celebration locally without touching ntfy or the totals.
 
 ## Behaviour notes
 

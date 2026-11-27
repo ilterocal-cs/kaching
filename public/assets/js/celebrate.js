@@ -46,7 +46,7 @@ async function celebrate(s, hold) {
     t.setAttribute("aria-hidden", "true");
     windowEl.appendChild(t);
   });
-  const title = s.test ? "Test sale" : (s.label || (big ? "Big sale!" : "New sale"));
+  const title = s.test ? "Test loan" : (s.label || (big ? "Big loan!" : "New loan"));
   const inEur = s.currency !== BASE ? `≈ ${fmt(s.eur)}` : "";
   burstLabel.textContent = [title, inEur].filter(Boolean).join(" · ");
   void windowEl.offsetWidth;

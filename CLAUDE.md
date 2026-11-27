@@ -40,16 +40,17 @@ Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/ (deployed from `
 | `ledger.js` | `recordMessage(m)` (dedupe, totals, live vs backfill), `rollover`, `resetToday`, `startFreshDay` |
 | `ntfy.js` | `connect()`: SSE stream, status, own reconnect with the latest `lastId` |
 | `celebrate.js` | `enqueue(sale)`, `isCelebrating()`, queue, pop-up tabs, label |
-| `ui.js` | `renderTotals`, `animateTotalTo` (count-up), `resetShown`, `syncTotals`, `renderRoll`, `setStatus`, `renderQr` |
+| `ui.js` | `renderTotals` (also the flag), `animateTotalTo` (count-up), `resetShown`, `syncTotals`, `renderRoll`, `setStatus`, `renderQr` |
 | `sound.js` | `audio()` (create/resume `AudioContext`), `kaching(big)` |
 | `coins.js` | Canvas sizing, `coinBurst(n)` |
+| `flags.js` | `flagSvg(market)`: inline SVG flag per market code (simplified, e.g. Spain without coat of arms), `""` if unknown |
 | `qr.js` | `qrMatrix(text)`: built-in QR encoder (byte mode, level M, versions 1–15, ≤ 412 bytes). Pure, no DOM |
-| `settings.js` | `<dialog>` form, `openSettings`, `isSettingsOpen`, market dropdown from the markets textarea, topic generator, copy URL, test sale, reset today |
+| `settings.js` | `<dialog>` form, `openSettings`, `isSettingsOpen`, market dropdown from the markets textarea, topic generator, copy URL, test loan, reset today |
 | `screen.js` | `keepAwake` (Wake Lock), `wake` (hides controls and cursor after 3.5 s), full-screen button |
 
 Shared state: `cfg` (config.js) and `day` (day.js) are exported `let` live bindings. Importers can read and mutate their fields but must replace them only via `setCfg()` / `setDay()`. The shown (animated) total lives privately in `ui.js`.
 
-Dependency direction (no cycles): `util`, `storage`, `qr` → `config` → `day` → `sales`, `ui`, `sound`, `coins` → `celebrate` → `ledger` → `ntfy` → `settings` → `screen` → `main`. Keep it acyclic: modules with top-level code (`config`, `day`, `ui`) must not import modules that import them.
+Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` → `day` → `sales`, `ui`, `sound`, `coins` → `celebrate` → `ledger` → `ntfy` → `settings` → `screen` → `main`. Keep it acyclic: modules with top-level code (`config`, `day`, `ui`) must not import modules that import them.
 
 ## Key behaviours
 
@@ -84,7 +85,7 @@ Dependency direction (no cycles): `util`, `storage`, `qr` → `config` → `day`
 - Changing the market resets the day (`day.market` differs) with no `lastId`, so `connect()` replays the stream from midnight and counts today's sales for the new market.
 - Rates are fixed and hand-set. Changing them does not recalculate sales already counted today (each sale stores its own `eur`).
 - The total, the big-sale threshold (`cfg.big`) and the "≈ €" hint on the celebration are in EUR. Individual sales display in their local currency.
-- The main screen label reads `Today · <market>`.
+- The main screen label reads `Today · <market>` with the market's flag before it (`flags.js`). Flags are inline SVG on purpose: no image files, and flag emoji don't render on Windows or many TV browsers. A market without a flag entry just shows no flag; when adding a default market, add its flag too.
 
 ### Celebration queue
 
@@ -144,6 +145,7 @@ If you change either shape incompatibly, bump the key suffix (`.v2`) rather than
 - The QR code is generated in-page on purpose: never use a CDN library or an online QR API, because the URL contains the topic. `setupUrl()` includes `topic`, `market`, `big`, `sound=0` when muted, and `markets` only when it differs from `defaults.markets`. Call `renderQr()` whenever `cfg` changes. Dark modules on paper background in both themes (scanners need dark-on-light).
 - The main screen is meant to be read from across a room: big type, minimal text, controls hidden when idle.
 - Copy: sentence case, plain words, typographic apostrophes (’) in visible text.
+- Visible wording is about loans, not sales: "loans issued", "New loan", "Big loan!", "Test loan", "Play a test loan". Code identifiers (`sale`, `parseSale`, `day.sales`) keep the old names.
 
 ## Testing
 

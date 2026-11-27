@@ -3,6 +3,7 @@ import { $, fmt, fmtTime, reducedMotion } from "./util.js";
 import { cfg, TOPIC_RE, setupUrl } from "./config.js";
 import { day } from "./day.js";
 import { qrMatrix } from "./qr.js";
+import { flagSvg } from "./flags.js";
 
 const totalEl = $("total"), countEl = $("count"), rollList = $("rollList"), rollDate = $("rollDate");
 const statusEl = $("status"), statusText = $("statusText");
@@ -13,8 +14,11 @@ let shownCount = day.count;
 
 export function renderTotals() {
   $("todayLabel").textContent = `Today · ${cfg.market}`;
+  const flag = flagSvg(cfg.market);
+  if ($("flag").dataset.market !== cfg.market) { $("flag").innerHTML = flag; $("flag").dataset.market = cfg.market; }
+  $("flag").hidden = !flag;
   totalEl.textContent = fmt(shownTotal);
-  countEl.innerHTML = `<strong>${shownCount}</strong> ${shownCount === 1 ? "sale" : "sales"}`;
+  countEl.innerHTML = `<strong>${shownCount}</strong> ${shownCount === 1 ? "loan issued" : "loans issued"}`;
 }
 
 let totalAnim = null;
@@ -47,7 +51,7 @@ export function syncTotals() {
 export function renderRoll(freshFirst) {
   rollDate.textContent = new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
   if (!day.sales.length) {
-    rollList.innerHTML = `<li class="empty" style="display:block">Sales print here as they come in.</li>`;
+    rollList.innerHTML = `<li class="empty" style="display:block">Loans print here as they’re issued.</li>`;
     return;
   }
   rollList.innerHTML = "";

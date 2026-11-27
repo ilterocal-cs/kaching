@@ -60,7 +60,7 @@ $("testBtn").addEventListener("click", () => {
   enqueue({ amount, currency: m.currency, market: cfg.market, eur: Math.round(amount * m.rate * 100) / 100, label: "", test: true });
 });
 $("resetBtn").addEventListener("click", () => {
-  if (!confirm("Reset today’s total and the till roll? Sales from ntfy won’t be pulled in again.")) return;
+  if (!confirm("Reset today’s total and the till roll? Loans from ntfy won’t be pulled in again.")) return;
   resetToday();
 });
 form.addEventListener("submit", (e) => {
