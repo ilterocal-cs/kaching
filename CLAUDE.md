@@ -138,7 +138,7 @@ If you change either shape incompatibly, bump the key suffix (`.v2`) rather than
 
 There are no automated tests. To check changes:
 
-1. Serve locally: `python3 -m http.server 8000` and open `http://localhost:8000/?topic=<test-topic>`. Use a throwaway topic, not the production one.
+1. Serve locally: `python3 -m http.server 8000` and open `http://localhost:8000/?topic=<test-topic>`, or run `./tunnel.sh` for a public HTTPS URL (Cloudflare quick tunnel, serves only `index.html`). Use a throwaway topic, not the production one.
 2. Publish test messages:
    ```bash
    curl -d '{"amount": 199, "market": "PL"}' https://ntfy.sh/<test-topic>

@@ -122,6 +122,15 @@ curl -d '{"amount": 199, "market": "PL"}' https://ntfy.sh/<your-topic>
 
 Or open `https://ntfy.sh/<your-topic>` in a browser and publish `{"amount": 199, "market": "PL"}` from ntfy's web page.
 
+### Run it locally on a public HTTPS URL
+
+```bash
+brew install cloudflared   # once
+./tunnel.sh
+```
+
+It prints a free `https://….trycloudflare.com` URL (no account needed) that serves your local `index.html`; reload to see edits. Only `index.html` is served. The URL changes on every run and stops when you press Ctrl+C, so use GitHub Pages for the office screen.
+
 **Settings → Play a test sale** runs the celebration locally without touching ntfy or the totals.
 
 ## Behaviour notes
