@@ -141,7 +141,7 @@ It prints a free `https://….trycloudflare.com` URL (no account needed) that se
 - **State is per browser.** Totals and settings live in `localStorage` on each screen. Two screens count independently.
 - **Changing the topic starts a fresh day,** whether you change it in Settings or open a link with a different `?topic=`. Sales from today on the new topic are pulled in again from ntfy.
 - **Screen stays awake** where the browser supports the Wake Lock API.
-- **Setup QR code.** The bottom-right corner shows a QR code with this screen's full setup link (topic, market, big-sale threshold, sound, and the markets list when it differs from the defaults). Scan it with a phone or tablet to open an identical display. It updates when you save settings and is hidden until a topic is set. Anyone who can see the screen can scan it and get the topic.
+- **Setup QR code.** The bottom-right corner shows a QR code with this screen's full setup link (topic, market, big-sale threshold, sound, and the markets list when it differs from the defaults). Scan it with a phone or tablet to open an identical display, or use the **Copy link** button under it (shown while you move the mouse or tap, hidden when idle). It updates when you save settings and is hidden until a topic is set. Anyone who can see the screen can scan it and get the topic.
 
 ## Limitations
 

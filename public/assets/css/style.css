@@ -127,9 +127,16 @@ body.idle { cursor: none; }
   background: var(--paper); padding: 8px 8px 10px; border-radius: 10px;
   box-shadow: 0 10px 24px rgba(0,0,0,.2); text-align: center;
 }
-.qr svg { display: block; width: clamp(96px, 8vw, 150px); height: auto; }
-.qr figcaption { font-size: 12px; color: #6B6457; margin-top: 4px; max-width: clamp(96px, 8vw, 150px); line-height: 1.3; }
+.qr svg { display: block; width: clamp(192px, 16vw, 300px); height: auto; }
+.qr figcaption { font-size: 12px; color: #6B6457; margin-top: 4px; max-width: clamp(192px, 16vw, 300px); line-height: 1.3; }
 .qr[hidden] { display: none; }
+.qr-copy {
+  margin-top: 6px; width: 100%; padding: 5px 8px; border-radius: 6px; cursor: pointer;
+  border: 1px solid #CFC6B2; background: #fff; color: var(--ink); font-size: 12px; font-weight: 500;
+  transition: opacity .4s;
+}
+.qr-copy:hover { background: #F4EFE2; }
+body.idle .qr-copy { opacity: 0; pointer-events: none; }
 
 /* ---------- celebration ---------- */
 .burst {

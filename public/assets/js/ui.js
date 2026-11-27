@@ -78,6 +78,20 @@ export function setStatus(state) {
   }[state] || state;
 }
 
+// Copies the setup link (the same one as the QR code). Falls back to a prompt
+// where the clipboard isn't available (e.g. plain http on another host).
+const qrCopyBtn = $("qrCopyBtn");
+qrCopyBtn.addEventListener("click", async () => {
+  const url = setupUrl();
+  try {
+    await navigator.clipboard.writeText(url);
+    qrCopyBtn.textContent = "Copied";
+    setTimeout(() => (qrCopyBtn.textContent = "Copy link"), 1500);
+  } catch {
+    window.prompt("Copy this link:", url);
+  }
+});
+
 // QR code with this screen's setup link. Call whenever cfg changes.
 export function renderQr() {
   const box = $("qr");

@@ -142,7 +142,7 @@ If you change either shape incompatibly, bump the key suffix (`.v2`) rather than
 - `prefers-reduced-motion`: no tab animation, no coins, no pulse.
 - Layout collapses to one column under 760 px.
 - Right column (`.side`) = till roll + setup QR code at the bottom right. The roll shrinks (`min-height: 0`) so it never covers the QR.
-- The QR code is generated in-page on purpose: never use a CDN library or an online QR API, because the URL contains the topic. `setupUrl()` includes `topic`, `market`, `big`, `sound=0` when muted, and `markets` only when it differs from `defaults.markets`. Call `renderQr()` whenever `cfg` changes. Dark modules on paper background in both themes (scanners need dark-on-light).
+- The QR code is generated in-page on purpose: never use a CDN library or an online QR API, because the URL contains the topic. `setupUrl()` includes `topic`, `market`, `big`, `sound=0` when muted, and `markets` only when it differs from `defaults.markets`. Call `renderQr()` whenever `cfg` changes. The QR is 192–300 px wide (`clamp(192px, 16vw, 300px)`) so it scans from a distance. The **Copy link** button under it copies `setupUrl()` (falls back to `prompt()` without clipboard access) and, like the other controls, fades out when idle. Dark modules on paper background in both themes (scanners need dark-on-light).
 - The main screen is meant to be read from across a room: big type, minimal text, controls hidden when idle.
 - Copy: sentence case, plain words, typographic apostrophes (’) in visible text.
 - Visible wording is about loans, not sales: "loans issued", "New loan", "Big loan!", "Test loan", "Play a test loan". Code identifiers (`sale`, `parseSale`, `day.sales`) keep the old names.
