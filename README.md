@@ -4,7 +4,7 @@ A full-screen sales display for the office. Every time a sale happens on our pla
 
 It currently runs for Poland (PLN), with seven more markets already set up for later. Each market has its own currency and a rate to EUR, and the daily total is summed in EUR.
 
-It is a single static HTML file. There is no backend, no build step and no dependencies.
+It is a static page in `public/`: `index.html` plus plain CSS and JavaScript modules in `public/assets/`. There is no backend, no framework and no dependencies.
 
 **Live:** https://ilterocal-cs.github.io/kaching/
 
@@ -129,7 +129,7 @@ brew install cloudflared   # once
 ./tunnel.sh
 ```
 
-It prints a free `https://….trycloudflare.com` URL (no account needed) that serves your local `index.html`; reload to see edits. Only `index.html` is served. The URL changes on every run and stops when you press Ctrl+C, so use GitHub Pages for the office screen.
+It prints a free `https://….trycloudflare.com` URL (no account needed) that serves your local `public/` folder; reload to see edits (run `node build.mjs` after changing assets). Only `public/` is served, the same as on GitHub Pages. The URL changes on every run and stops when you press Ctrl+C, so use GitHub Pages for the office screen.
 
 **Settings → Play a test sale** runs the celebration locally without touching ntfy or the totals.
 
@@ -141,6 +141,7 @@ It prints a free `https://….trycloudflare.com` URL (no account needed) that se
 - **State is per browser.** Totals and settings live in `localStorage` on each screen. Two screens count independently.
 - **Changing the topic starts a fresh day,** whether you change it in Settings or open a link with a different `?topic=`. Sales from today on the new topic are pulled in again from ntfy.
 - **Screen stays awake** where the browser supports the Wake Lock API.
+- **Setup QR code.** The bottom-right corner shows a QR code with this screen's full setup link (topic, market, big-sale threshold, sound, and the markets list when it differs from the defaults). Scan it with a phone or tablet to open an identical display. It updates when you save settings and is hidden until a topic is set. Anyone who can see the screen can scan it and get the topic.
 
 ## Limitations
 
@@ -159,8 +160,35 @@ A Cloudflare Worker could later replace ntfy to verify a webhook secret and fetc
 | Status stuck on "Connection lost, retrying…" | Network blocks ntfy.sh, or the topic name has invalid characters (allowed: letters, digits, `-`, `_`). |
 | Sale arrives but no sound | Tap **Start display** after loading; check **Sound** in Settings and the device volume. |
 | Sale arrives but nothing shows | The message's `market` doesn't match the screen's market, or `amount` is missing. Check the PostHog body and **Settings → Market**. |
-| GitHub Pages 404 | Use `https://ilterocal-cs.github.io/kaching/` (with `/kaching/`). The file must be named `index.html` in the repo root, and the repo must be public. |
+| GitHub Pages 404 | Use `https://ilterocal-cs.github.io/kaching/` (with `/kaching/`). Check the latest run in the repo's **Actions** tab, and that **Settings → Pages → Source** is "GitHub Actions". The repo must be public on a free plan. |
+
+## Development
+
+```
+public/                    everything that is published (and nothing else)
+  index.html               markup only (+ the generated asset block)
+  assets/css/              styles
+  assets/js/               ES modules, one per job (ntfy.js, ui.js, qr.js, …); main.js is the entry
+build.mjs                  cache busting: writes ?v=<hash> URLs into public/index.html
+tunnel.sh                  serves public/ on a temporary public HTTPS URL
+.github/workflows/         deploys public/ to GitHub Pages
+.githooks/pre-commit       runs build.mjs on commit
+```
+
+After changing anything in `public/assets/`, run:
+
+```bash
+node build.mjs
+```
+
+It updates the `?v=<hash>` URLs in `public/index.html`, so browsers and office screens load the new files instead of cached ones. To have this happen automatically on every commit, enable the git hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The page uses JavaScript modules, so open it through a local server (`python3 -m http.server 8000 --directory public` or `./tunnel.sh`), not by double-clicking the file.
 
 ## Deployment
 
-Hosted on GitHub Pages from the `main` branch, root folder. Push or upload a new `index.html` and the site updates within a minute or two.
+Hosted on GitHub Pages. Only the `public/` folder is published, by the workflow in `.github/workflows/pages.yml` (**Settings → Pages → Source** must be "GitHub Actions"). Push to `main`; the workflow refreshes the asset hashes, publishes `public/`, and the site updates within a minute or two. Progress is in the repo's **Actions** tab.

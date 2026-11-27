@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Serves index.html on a public HTTPS URL through a free Cloudflare quick tunnel.
-# No account needed. Only index.html is served; the rest of the repo is not reachable.
+# Serves the public/ folder on a public HTTPS URL through a free Cloudflare quick tunnel.
+# No account needed. Only public/ is served, like on GitHub Pages; the rest of the repo is not reachable.
 # Usage: ./tunnel.sh            (PORT=9000 ./tunnel.sh to change the local port)
 set -euo pipefail
 
@@ -9,13 +9,12 @@ cd "$(dirname "$0")"
 
 command -v cloudflared >/dev/null || { echo "cloudflared is missing. Install it with: brew install cloudflared"; exit 1; }
 
-# A temp folder holding only a link to index.html, so edits show up on reload.
-WEB="$(mktemp -d)"
-ln -s "$PWD/index.html" "$WEB/index.html"
+# Refresh the asset hashes, then serve public/ (edits show up on reload; re-run the build after asset changes).
+node build.mjs >/dev/null
 
-python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$WEB" >/dev/null 2>&1 &
+python3 -m http.server "$PORT" --bind 127.0.0.1 --directory public >/dev/null 2>&1 &
 SERVER=$!
-trap 'kill "$SERVER" 2>/dev/null; rm -rf "$WEB"' EXIT
+trap 'kill "$SERVER" 2>/dev/null' EXIT
 
 echo "Local:  http://localhost:$PORT"
 echo "Starting tunnel… (Ctrl+C to stop)"

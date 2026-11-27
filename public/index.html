@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Ka-ching</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- build:assets -->
+<link rel="stylesheet" href="./assets/css/style.css?v=b7e9fbf6c7">
+<script type="importmap">
+{
+  "imports": {
+    "./assets/js/celebrate.js": "./assets/js/celebrate.js?v=209f1c7ceb",
+    "./assets/js/coins.js": "./assets/js/coins.js?v=a8e2063186",
+    "./assets/js/config.js": "./assets/js/config.js?v=ccd9f89d79",
+    "./assets/js/day.js": "./assets/js/day.js?v=bd143f4326",
+    "./assets/js/ledger.js": "./assets/js/ledger.js?v=4180bac6ba",
+    "./assets/js/main.js": "./assets/js/main.js?v=7c88f521e5",
+    "./assets/js/ntfy.js": "./assets/js/ntfy.js?v=544dd47cea",
+    "./assets/js/qr.js": "./assets/js/qr.js?v=231b294bb3",
+    "./assets/js/sales.js": "./assets/js/sales.js?v=36f6c23cb9",
+    "./assets/js/screen.js": "./assets/js/screen.js?v=86566453f2",
+    "./assets/js/settings.js": "./assets/js/settings.js?v=9a7f0513f6",
+    "./assets/js/sound.js": "./assets/js/sound.js?v=4b4d52e08f",
+    "./assets/js/storage.js": "./assets/js/storage.js?v=638f8f3968",
+    "./assets/js/ui.js": "./assets/js/ui.js?v=00d0ddc3ff",
+    "./assets/js/util.js": "./assets/js/util.js?v=5ab5608aef"
+  }
+}
+</script>
+<link rel="modulepreload" href="./assets/js/celebrate.js?v=209f1c7ceb">
+<link rel="modulepreload" href="./assets/js/coins.js?v=a8e2063186">
+<link rel="modulepreload" href="./assets/js/config.js?v=ccd9f89d79">
+<link rel="modulepreload" href="./assets/js/day.js?v=bd143f4326">
+<link rel="modulepreload" href="./assets/js/ledger.js?v=4180bac6ba">
+<link rel="modulepreload" href="./assets/js/ntfy.js?v=544dd47cea">
+<link rel="modulepreload" href="./assets/js/qr.js?v=231b294bb3">
+<link rel="modulepreload" href="./assets/js/sales.js?v=36f6c23cb9">
+<link rel="modulepreload" href="./assets/js/screen.js?v=86566453f2">
+<link rel="modulepreload" href="./assets/js/settings.js?v=9a7f0513f6">
+<link rel="modulepreload" href="./assets/js/sound.js?v=4b4d52e08f">
+<link rel="modulepreload" href="./assets/js/storage.js?v=638f8f3968">
+<link rel="modulepreload" href="./assets/js/ui.js?v=00d0ddc3ff">
+<link rel="modulepreload" href="./assets/js/util.js?v=5ab5608aef">
+<script type="module" src="./assets/js/main.js?v=7c88f521e5"></script>
+<!-- /build:assets -->
+</head>
+<body>
+  <div class="stage">
+    <main class="main">
+      <div class="topbar">
+        <div class="status" id="status" data-state="setup" role="status" aria-live="polite">
+          <span class="dot"></span><span id="statusText">Not set up</span>
+        </div>
+        <div class="controls">
+          <button class="icon-btn" id="fsBtn" aria-label="Full screen" title="Full screen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          </button>
+          <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <section class="today" aria-label="Today’s sales">
+        <p class="today-label" id="todayLabel">Today</p>
+        <div class="total" id="total">€0.00</div>
+        <div class="count" id="count"><strong>0</strong> sales</div>
+      </section>
+    </main>
+
+    <div class="side">
+      <aside class="roll" aria-label="Recent sales">
+        <h2>Till roll</h2>
+        <p class="sub" id="rollDate"></p>
+        <ol id="rollList"></ol>
+      </aside>
+      <figure class="qr" id="qr" hidden>
+        <svg id="qrSvg" role="img" aria-label="QR code with this display’s setup link" shape-rendering="crispEdges"></svg>
+        <figcaption>Scan to open this display</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="burst" id="burst" aria-live="assertive">
+    <div class="register"><div class="window" id="window"></div></div>
+    <div class="burst-label" id="burstLabel"></div>
+  </div>
+  <canvas id="coins"></canvas>
+
+  <div class="gate" id="gate">
+    <div>
+      <h1>Ka-ching</h1>
+      <p>Browsers only play sound after a tap. Start the display once and leave it running.</p>
+      <button class="start" id="startBtn">Start display</button>
+    </div>
+  </div>
+
+  <dialog id="settings">
+    <form method="dialog" id="form" novalidate>
+      <h2>Display settings</h2>
+
+      <label class="field">
+        <span>ntfy topic</span>
+        <div class="row">
+          <input type="text" name="topic" autocomplete="off" spellcheck="false" placeholder="e.g. kaching-x7f2q9…">
+          <button type="button" class="btn" id="genBtn">Generate</button>
+        </div>
+        <p class="hint">Keep it long and random. Anyone who knows the topic can see your sales and send fake ones.</p>
+      </label>
+
+      <label class="field">
+        <span>Market</span>
+        <select name="market"></select>
+        <p class="hint">This screen only counts sales from this market.</p>
+      </label>
+
+      <label class="field">
+        <span>Markets and rates</span>
+        <textarea name="markets" rows="8" spellcheck="false"></textarea>
+        <p class="hint">One per line: market, currency, rate to EUR. <code>PL PLN 0.23</code> means 100 PLN counts as €23 in the total.</p>
+      </label>
+
+      <div class="two">
+        <label class="field">
+          <span>Big sale from (EUR)</span>
+          <input type="number" name="big" min="0" step="any">
+          <p class="hint">Sales worth at least this many euros get a bigger celebration.</p>
+        </label>
+        <div class="field">
+          <span>Sound</span>
+          <label class="check"><input type="checkbox" name="sound"> Play the ka-ching</label>
+        </div>
+      </div>
+
+      <div class="hook">
+        <strong>Webhook URL for PostHog</strong>
+        <code id="hookUrl">Set a topic first</code>
+        <div class="row"><button type="button" class="btn" id="copyBtn">Copy URL</button></div>
+      </div>
+
+      <p class="error" id="formError"></p>
+
+      <div class="actions">
+        <div class="left">
+          <button type="button" class="btn" id="testBtn">Play a test sale</button>
+          <button type="button" class="btn danger" id="resetBtn">Reset today</button>
+        </div>
+        <button type="submit" class="btn primary" id="saveBtn">Save</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

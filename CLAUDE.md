@@ -4,7 +4,7 @@ Context for working on this repository. See `README.md` for the user-facing setu
 
 ## What this is
 
-An office "ka-ching" sales display. One static page (`index.html`) subscribes to an ntfy.sh topic and, for every sale message, plays a synthesized cash-register sound, animates the amount in register pop-up tabs, and bursts coins on a canvas. Between sales it shows today's total in EUR, sale count and a till roll of recent sales.
+An office "ka-ching" sales display. A static page (`public/index.html` + `public/assets/`) subscribes to an ntfy.sh topic and, for every sale message, plays a synthesized cash-register sound, animates the amount in register pop-up tabs, and bursts coins on a canvas. Between sales it shows today's total in EUR, sale count and a till roll of recent sales.
 
 Currently live for one market, Poland (PLN). Defaults already include PL, SE, DK, FI, EE, UK, ES and CZ (see `defaults.markets` and the README table; keep them in sync). It is designed to become multi-country: each market maps to a currency and a fixed rate to EUR, and totals are summed in EUR.
 
@@ -12,36 +12,44 @@ The PostHog sale event `loan_issued` sends only `amount` (local currency) and `m
 
 Data flow: platform → PostHog `loan_issued` event → PostHog HTTP Webhook destination → `https://ntfy.sh/<topic>` → page via SSE.
 
-Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/
+Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/ (deployed from `public/` by a GitHub Actions workflow).
 
 ## Hard constraints
 
-- **Single file, no build.** All HTML, CSS and JS live in `index.html`. No bundler, framework, npm packages or transpilation. It must work by opening the file from GitHub Pages.
+- **Only `public/` is served.** Everything the browser loads lives in `public/`: `public/index.html` (markup only), `public/assets/css/style.css`, and native ES modules in `public/assets/js/`. Tooling and docs (`build.mjs`, `tunnel.sh`, `*.md`, `.githooks/`, `.github/`) stay at the repo root and are never published. Never put anything private in `public/`.
+- **Plain static files, no bundler.** No framework, npm packages, transpilation or bundling.
+- **Cache busting via `build.mjs`.** It hashes every file in `public/assets/` and rewrites the `<!-- build:assets -->` block in `public/index.html` (stylesheet link, import map, modulepreload links, entry script), all with `?v=<hash>`. Never edit that block by hand. Modules import each other with plain relative paths (`./ui.js`); the import map redirects them to the hashed URLs. Run `node build.mjs` after changing assets; the pre-commit hook in `.githooks/` does it automatically (enable once per clone with `git config core.hooksPath .githooks`). `node build.mjs --check` fails if hashes are stale. The deploy workflow also runs `node build.mjs` before publishing.
+- **Adding a file:** new `.css`/`.js` files in `public/assets/css` or `public/assets/js` are picked up by `build.mjs` automatically. Only `main.js` is loaded directly; other modules must be imported from it or its imports.
+- **ES modules need HTTP.** Opening `public/index.html` via `file://` won't work; use a local server (see Testing).
 - **No backend.** ntfy.sh is the only relay. Don't add servers, serverless functions or API keys without the user asking.
 - **No secrets in the repo.** The repo is public. Never commit a topic name, PostHog key or token. The topic comes from the URL (`?topic=`) or the settings dialog and is stored in `localStorage`.
-- **Keep `<meta name="robots" content="noindex, nofollow">`** in `index.html` so search engines don't index the live page.
+- **Keep `<meta name="robots" content="noindex, nofollow">`** in `public/index.html` so search engines don't index the live page.
 - **No audio or image files.** The sound is synthesized with the Web Audio API and coins are drawn on a canvas. Keep it that way unless asked.
 - **Only external resources:** ntfy.sh (the data) and Google Fonts (Big Shoulders Display, Instrument Sans), with system font fallbacks. The page must still work if fonts fail to load.
 
-## Code map (inside the `<script>` IIFE in `index.html`)
+## Code map (`public/assets/js/`)
 
-| Section | Responsibility |
+| File | Responsibility |
 | --- | --- |
-| storage | `load` / `store` wrappers around `localStorage` (try/catch, never throw) |
-| config | `BASE` (`"EUR"`), `defaults`, merge saved config, apply URL params (`topic`, `markets`, `market`, `big`, `sound=0`) |
-| markets | `MARKET_RE`, `validCurrency`, `parseMarkets(text)`, `marketsToText` |
-| day state | `todayKey`, `startOfDay`, `freshDay`, `day` object (reset if date, topic or market differs), `shownTotal` / `shownCount` |
-| formatting | `fmt(value, currency)` via cached `Intl.NumberFormat` (omitted currency = EUR), `fmtTime` |
-| rendering | `renderTotals`, `animateTotalTo` (count-up), `renderRoll`, `setStatus` |
-| parsing | `toNum`, `cleanStr`, `parseSale(text)` |
-| ntfy connection | `connect`, `handle` |
-| celebration queue | `queue`, `runQueue`, `celebrate` |
-| sound | `audio`, `bell`, `noise`, `kaching(big)` |
-| coins | canvas sizing, `coinBurst`, `drawCoins` |
-| rollover | `rollover()` on a 30 s interval and before handling messages |
-| wake lock / idle | `keepAwake`, `wake` (hides controls and cursor after 3.5 s) |
-| settings | `<dialog>` form, `fillMarketSelect` (dropdown built from the markets textarea), topic generator, copy URL, test sale, reset today |
-| start | gate overlay unlocks audio, then `renderTotals`, `renderRoll`, `connect` |
+| `main.js` | Entry point: start gate (unlocks audio), 30 s `rollover` interval, then `renderTotals`, `renderRoll`, `renderQr`, `connect` |
+| `util.js` | No dependencies: `BASE` (`"EUR"`), `$`, `sleep`, `reducedMotion`, `fmt(value, currency)` (omitted currency = EUR), `fmtTime`, `toNum`, `cleanStr` |
+| `storage.js` | `LS_CFG`, `LS_DAY`, `load` / `store` wrappers around `localStorage` (never throw) |
+| `config.js` | `defaults`, `cfg` (merged saved config + URL params `topic`, `markets`, `market`, `big`, `sound=0`), `setCfg`, `TOPIC_RE`, `parseMarkets`, `marketsToText`, `setupUrl` |
+| `day.js` | `todayKey`, `startOfDay`, `freshDay`, `day` (reset if date, topic or market differs), `setDay`, `saveDay` |
+| `sales.js` | `parseSale(text)`: ntfy message body → sale or `null` |
+| `ledger.js` | `recordMessage(m)` (dedupe, totals, live vs backfill), `rollover`, `resetToday`, `startFreshDay` |
+| `ntfy.js` | `connect()`: SSE stream, status, own reconnect with the latest `lastId` |
+| `celebrate.js` | `enqueue(sale)`, `isCelebrating()`, queue, pop-up tabs, label |
+| `ui.js` | `renderTotals`, `animateTotalTo` (count-up), `resetShown`, `syncTotals`, `renderRoll`, `setStatus`, `renderQr` |
+| `sound.js` | `audio()` (create/resume `AudioContext`), `kaching(big)` |
+| `coins.js` | Canvas sizing, `coinBurst(n)` |
+| `qr.js` | `qrMatrix(text)`: built-in QR encoder (byte mode, level M, versions 1–15, ≤ 412 bytes). Pure, no DOM |
+| `settings.js` | `<dialog>` form, `openSettings`, `isSettingsOpen`, market dropdown from the markets textarea, topic generator, copy URL, test sale, reset today |
+| `screen.js` | `keepAwake` (Wake Lock), `wake` (hides controls and cursor after 3.5 s), full-screen button |
+
+Shared state: `cfg` (config.js) and `day` (day.js) are exported `let` live bindings. Importers can read and mutate their fields but must replace them only via `setCfg()` / `setDay()`. The shown (animated) total lives privately in `ui.js`.
+
+Dependency direction (no cycles): `util`, `storage`, `qr` → `config` → `day` → `sales`, `ui`, `sound`, `coins` → `celebrate` → `ledger` → `ntfy` → `settings` → `screen` → `main`. Keep it acyclic: modules with top-level code (`config`, `day`, `ui`) must not import modules that import them.
 
 ## Key behaviours
 
@@ -80,7 +88,7 @@ Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/
 
 ### Celebration queue
 
-- Live sales go into `queue`; `runQueue` plays them one at a time.
+- Live sales go into the queue via `enqueue`; `runQueue` plays them one at a time.
 - Hold time is 4200 ms, or 2200 ms when more than two are waiting.
 - `s.eur >= cfg.big` (EUR) triggers the bigger sound (second bell and coin pings) and 140 coins instead of 60.
 - The total animates up after each celebration finishes, so the screen counts the sale it just showed.
@@ -132,6 +140,8 @@ If you change either shape incompatibly, bump the key suffix (`.v2`) rather than
 - Fonts: Big Shoulders Display for numbers and headings, Instrument Sans for text.
 - `prefers-reduced-motion`: no tab animation, no coins, no pulse.
 - Layout collapses to one column under 760 px.
+- Right column (`.side`) = till roll + setup QR code at the bottom right. The roll shrinks (`min-height: 0`) so it never covers the QR.
+- The QR code is generated in-page on purpose: never use a CDN library or an online QR API, because the URL contains the topic. `setupUrl()` includes `topic`, `market`, `big`, `sound=0` when muted, and `markets` only when it differs from `defaults.markets`. Call `renderQr()` whenever `cfg` changes. Dark modules on paper background in both themes (scanners need dark-on-light).
 - The main screen is meant to be read from across a room: big type, minimal text, controls hidden when idle.
 - Copy: sentence case, plain words, typographic apostrophes (’) in visible text.
 
@@ -139,7 +149,7 @@ If you change either shape incompatibly, bump the key suffix (`.v2`) rather than
 
 There are no automated tests. To check changes:
 
-1. Serve locally: `python3 -m http.server 8000` and open `http://localhost:8000/?topic=<test-topic>`, or run `./tunnel.sh` for a public HTTPS URL (Cloudflare quick tunnel, serves only `index.html`). Use a throwaway topic, not the production one.
+1. Run `node build.mjs`, then serve locally: `python3 -m http.server 8000 --directory public` and open `http://localhost:8000/?topic=<test-topic>`, or run `./tunnel.sh` for a public HTTPS URL (Cloudflare quick tunnel; runs the build and serves only `public/`). Use a throwaway topic, not the production one.
 2. Publish test messages:
    ```bash
    curl -d '{"amount": 199, "market": "PL"}' https://ntfy.sh/<test-topic>
@@ -151,11 +161,12 @@ There are no automated tests. To check changes:
    curl -d '{"amount": ""}' https://ntfy.sh/<test-topic>                     # must be ignored
    ```
 3. Send several in a row to check queueing, reload to check backfill and dedupe, and toggle the OS dark mode.
-4. Syntax check the script after edits, e.g. extract the `<script>` contents and run `node --check`.
+4. Syntax check after edits: copy a module to `*.mjs` and run `node --check`, and check the browser console for import errors.
+5. After touching the QR encoder, scan the on-screen code with a phone, or decode a screenshot (e.g. OpenCV `QRCodeDetector`), at short and long URLs.
 
 ## Deployment
 
-GitHub Pages, `main` branch, repo root. The served file must be `index.html`. Pushing to `main` deploys within a minute or two.
+GitHub Pages with Source = **GitHub Actions** (repo Settings → Pages). `.github/workflows/pages.yml` runs on every push to `main`: checkout → `node build.mjs` → upload `public/` → deploy. Live within a minute or two; follow runs in the repo's Actions tab. Branch-based Pages can only serve `/` or `/docs`, which is why the workflow is needed for `public/`.
 
 ## Possible future work (only if asked)
 
