@@ -104,7 +104,7 @@ Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/
   topic: string,
   market: string,                                   // selected market, e.g. "PL"
   markets: { [market]: { currency: string, rate: number } },  // rate to EUR
-  big: number,                                      // EUR
+  big: number,                                      // EUR, default 4000
   sound: boolean
 }
 
@@ -142,7 +142,7 @@ There are no automated tests. To check changes:
 2. Publish test messages:
    ```bash
    curl -d '{"amount": 199, "market": "PL"}' https://ntfy.sh/<test-topic>
-   curl -d '{"amount": 3000, "market": "PL"}' https://ntfy.sh/<test-topic>   # big sale (≈ €690)
+   curl -d '{"amount": 20000, "market": "PL"}' https://ntfy.sh/<test-topic>  # big sale (≈ €4,600)
    curl -d '{"amount": -20, "market": "PL"}' https://ntfy.sh/<test-topic>    # refund
    curl -d '{"amount": "49,90", "market": "pl"}' https://ntfy.sh/<test-topic> # decimal comma, lower-case market
    curl -d '{"amount": 50, "market": "SE"}' https://ntfy.sh/<test-topic>     # other market: must be ignored on a PL screen

@@ -69,7 +69,7 @@ All settings can be passed in the URL, so one link sets up any screen. URL value
 | `topic` | (none) | ntfy topic to listen to. Required. |
 | `markets` | see [Markets](#markets-and-currencies) | Market list as `market:currency:rate`, comma-separated, e.g. `PL:PLN:0.23,CZ:CZK:0.04`. |
 | `market` | `PL` | The market this screen shows. Only sales with this `market` are counted. Must be in the list. |
-| `big` | `500` | Sales worth at least this many euros get a bigger celebration and sound. |
+| `big` | `4000` | Sales worth at least this many euros (after converting with the market rate) get a bigger celebration and sound. |
 | `sound` | on | `sound=0` mutes the display. |
 
 ## Markets and currencies
