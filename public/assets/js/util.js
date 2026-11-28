@@ -7,13 +7,17 @@ export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const fmtCache = {};
-export function fmt(v, cur) {
+// whole: round to whole units, without cents (used for the big total).
+export function fmt(v, cur, whole) {
   cur = cur || BASE;
+  const key = cur + (whole ? ":0" : "");
   try {
-    fmtCache[cur] = fmtCache[cur] || new Intl.NumberFormat(undefined, { style: "currency", currency: cur });
-    return fmtCache[cur].format(v);
+    fmtCache[key] = fmtCache[key] || new Intl.NumberFormat(undefined, whole
+      ? { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 0 }
+      : { style: "currency", currency: cur });
+    return fmtCache[key].format(v);
   } catch {
-    return `${v.toFixed(2)} ${cur}`;
+    return `${v.toFixed(whole ? 0 : 2)} ${cur}`;
   }
 }
 

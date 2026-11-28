@@ -18,7 +18,7 @@ export function renderTotals() {
   const flag = flagSvg(cfg.market);
   if ($("flag").dataset.market !== cfg.market) { $("flag").innerHTML = flag; $("flag").dataset.market = cfg.market; }
   $("flag").hidden = !flag;
-  totalEl.textContent = fmt(shownTotal);
+  totalEl.textContent = fmt(shownTotal, null, true);
   countEl.innerHTML = `<strong>${shownCount}</strong> ${shownCount === 1 ? "loan issued" : "loans issued"}`;
 }
 
