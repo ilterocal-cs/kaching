@@ -110,6 +110,7 @@ Keys `kaching.cfg.v2` (shape: `defaults` in `config.js`) and `kaching.day.v2` (s
 
 There are no automated tests. To check changes:
 
+0. Default test parameters (topic, market, big) live in `test.local.env` (`KACHING_TEST_PARAMS`), which is git-ignored. Use them for local testing and test messages; never copy the topic into tracked files.
 1. Run `node build.mjs`, then serve locally: `python3 -m http.server 8000 --directory public` and open `http://localhost:8000/?topic=<test-topic>`, or run `./tunnel.sh` for a public HTTPS URL (Cloudflare quick tunnel; runs the build and serves only `public/`). Use a throwaway topic, not the production one.
 2. Publish test messages:
    ```bash

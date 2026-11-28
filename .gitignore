@@ -1,2 +1,5 @@
 .idea/
 .DS_Store
+
+# Local test settings (contain the test topic)
+*.local.env
