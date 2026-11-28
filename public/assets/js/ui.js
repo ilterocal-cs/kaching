@@ -63,7 +63,7 @@ export function renderRoll(freshFirst) {
     const l = document.createElement("span"); l.className = "label";
     l.textContent = s.label || "";
     const a = document.createElement("span"); a.className = "amt" + (s.amount < 0 ? " neg" : "");
-    a.textContent = (s.amount >= 0 ? "+" : "") + fmt(s.amount, s.currency);
+    a.textContent = (s.amount >= 0 ? "+" : "") + fmt(s.amount, s.currency, true);
     li.append(t, l, a);
     rollList.appendChild(li);
   });
