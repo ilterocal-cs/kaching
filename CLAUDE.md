@@ -86,6 +86,7 @@ Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` 
 ### Day rollover
 
 - The day follows the selected market's time zone, not the device's (`clock.js`: `ZONES` maps market → IANA zone, e.g. `PL` → `Europe/Warsaw`; unknown markets use device time). `todayKey()`, `startOfDay()` and the till roll's date and times all use it; `startOfDay()` re-checks the UTC offset at midnight so daylight saving days are right.
+- `day.zone` records the zone the day was counted in; a mismatch (or a day saved before zones existed) starts a fresh day that replays from the market's midnight.
 - `day.key` is the market's date. `rollover()` resets totals at the market's midnight but keeps `lastId` so the stream isn't replayed.
 - "Reset today" keeps `ids` and `lastId` so already-seen messages aren't counted again.
 - `day.topic` records the topic. Loading with a different topic (settings or `?topic=`) starts a fresh day, so a `lastId` from another topic is never used as `?since=`.
