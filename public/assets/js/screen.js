@@ -2,12 +2,24 @@
 import { $ } from "./util.js";
 import { isSettingsOpen } from "./settings.js";
 
-let wakeLock = null;
+// Screen Wake Lock (Chrome, Edge, Safari 16.4+, Firefox 126+). Taken after the start
+// click and re-taken whenever the system drops it (tab hidden, battery saver, etc.).
+let wakeLock = null, awake = false;
 export async function keepAwake() {
-  try { if ("wakeLock" in navigator && document.visibilityState === "visible") wakeLock = await navigator.wakeLock.request("screen"); } catch {}
+  awake = true;
+  if (wakeLock || !("wakeLock" in navigator) || document.visibilityState !== "visible") return;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeLock.addEventListener("release", () => { wakeLock = null; setTimeout(retake, 1000); });
+  } catch { wakeLock = null; }
 }
-// The browser drops the wake lock when the tab is hidden; take it again once started.
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && $("gate").hidden) keepAwake(); });
+const retake = () => { if (awake) keepAwake(); };
+document.addEventListener("visibilitychange", retake);
+document.addEventListener("fullscreenchange", retake);
+// Some browsers refuse the lock without a recent user gesture, so retry on input too.
+["pointerdown", "keydown"].forEach((ev) => addEventListener(ev, retake, { passive: true }));
+// Safety net in case a release went unnoticed.
+setInterval(retake, 60000);
 
 // Hides the controls and cursor after 3.5 s without input.
 let idleTimer;
