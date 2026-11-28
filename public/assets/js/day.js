@@ -1,9 +1,10 @@
 // Today's state: total (EUR), count, till roll, and the ntfy position (seen IDs, lastId).
 import { cfg } from "./config.js";
 import { load, store, LS_DAY } from "./storage.js";
+import { todayKey, startOfDay } from "./clock.js";
 
-export const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
-export const startOfDay = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
+// The day and its midnight follow the selected market's time zone (clock.js).
+export { todayKey, startOfDay };
 export const freshDay = () => ({ key: todayKey(), topic: cfg.topic, market: cfg.market, total: 0, count: 0, ids: [], lastId: null, sales: [] });
 
 // Live binding: replace with setDay(), or mutate fields and call saveDay().

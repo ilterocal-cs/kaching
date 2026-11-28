@@ -1,5 +1,6 @@
 // Rendering of the main screen: total, count, till roll, status and the setup QR code.
-import { $, fmt, fmtTime, reducedMotion } from "./util.js";
+import { $, fmt, reducedMotion } from "./util.js";
+import { fmtTime, fmtToday } from "./clock.js";
 import { cfg, TOPIC_RE, setupUrl } from "./config.js";
 import { day } from "./day.js";
 import { qrMatrix } from "./qr.js";
@@ -49,7 +50,7 @@ export function syncTotals() {
 }
 
 export function renderRoll(freshFirst) {
-  rollDate.textContent = new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
+  rollDate.textContent = fmtToday();
   if (!day.sales.length) {
     rollList.innerHTML = `<li class="empty" style="display:block">Loans print here as they’re issued.</li>`;
     return;

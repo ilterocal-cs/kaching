@@ -136,7 +136,7 @@ It prints a free `https://….trycloudflare.com` URL (no account needed) that se
 ## Behaviour notes
 
 - **Sound needs one tap.** Browsers block audio until the page is clicked, which is why the page starts with a **Start display** button.
-- **Totals reset at local midnight.**
+- **Totals reset at midnight in the market's time zone** (e.g. Warsaw time for PL), whatever the screen's own clock says. The till roll shows times in that zone too. Markets you add yourself use the screen's time zone until one is added in `public/assets/js/clock.js`.
 - **Reloads don't lose sales.** On connect, the page asks ntfy for everything since the last message it saw, or since midnight. ntfy.sh keeps messages for about 12 hours, so a screen that was off longer than that will miss some. Missed sales are counted silently, without a celebration.
 - **State is per browser.** Totals and settings live in `localStorage` on each screen. Two screens count independently.
 - **Changing the topic starts a fresh day,** whether you change it in Settings or open a link with a different `?topic=`. Sales from today on the new topic are pulled in again from ntfy.

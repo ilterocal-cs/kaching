@@ -33,17 +33,17 @@ One ES module per job; each file starts with a comment saying what it does. `mai
 
 Shared state: `cfg` (config.js) and `day` (day.js) are exported `let` live bindings. Importers can read and mutate their fields but must replace them only via `setCfg()` / `setDay()`. The shown (animated) total lives privately in `ui.js`.
 
-Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` → `day` → `sales`, `ui`, `sound`, `coins` → `celebrate` → `ledger` → `ntfy` → `settings` → `screen` → `main`. Keep it acyclic: modules with top-level code (`config`, `day`, `ui`) must not import modules that import them.
+Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` → `clock` → `day` → `sales`, `ui`, `sound`, `coins` → `celebrate` → `ledger` → `ntfy` → `settings` → `screen` → `main`. Keep it acyclic: modules with top-level code (`config`, `day`, `ui`) must not import modules that import them.
 
 ## Key behaviours
 
 ### ntfy connection
 
-- `EventSource("https://ntfy.sh/<topic>/sse?since=<x>")`, where `x` is `day.lastId` if set, else the Unix timestamp of local midnight. This backfills sales after reloads (ntfy.sh caches about 12 h).
+- `EventSource("https://ntfy.sh/<topic>/sse?since=<x>")`, where `x` is `day.lastId` if set, else the Unix timestamp of the market's midnight. This backfills sales after reloads (ntfy.sh caches about 12 h).
 - ntfy sends `open` and `keepalive` as named events and messages as default events. `handle` parses `data` as JSON and only processes `event === "message"`.
 - On error the stream is closed and `connect` is retried after 4 s with the latest `lastId`. Don't rely on EventSource's built-in reconnect, which would reuse the old `since`.
 - Deduplication: `day.ids` holds seen message IDs (capped at 3000). Always check it before counting.
-- Messages with `time` before local midnight only advance `lastId`; they are not counted.
+- Messages with `time` before the market's midnight only advance `lastId`; they are not counted.
 - **Live vs backfill:** a message is "live" if `m.time >= pageStart - 2`. Live sales are queued for a celebration; backfilled ones update totals and the roll silently.
 
 ### Parsing (`parseSale`)
@@ -68,7 +68,7 @@ Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` 
 - Changing the market resets the day (`day.market` differs) with no `lastId`, so `connect()` replays the stream from midnight and counts today's sales for the new market.
 - Rates are fixed and hand-set. Changing them does not recalculate sales already counted today (each sale stores its own `eur`).
 - The total, the big-sale threshold (`cfg.big`) and the "≈ €" hint on the celebration are in EUR. Individual sales display in their local currency.
-- The main screen label reads `Today · <market>` with the market's flag before it (`flags.js`). Flags are inline SVG on purpose: no image files, and flag emoji don't render on Windows or many TV browsers. A market without a flag entry just shows no flag; when adding a default market, add its flag too.
+- The main screen label reads `Today · <market>` with the market's flag before it (`flags.js`). Flags are inline SVG on purpose: no image files, and flag emoji don't render on Windows or many TV browsers. A market without a flag entry just shows no flag; when adding a default market, add its flag and its time zone (`ZONES` in `clock.js`) too.
 
 ### Celebration queue
 
@@ -85,7 +85,8 @@ Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` 
 
 ### Day rollover
 
-- `day.key` is the local date. `rollover()` resets totals at midnight but keeps `lastId` so the stream isn't replayed.
+- The day follows the selected market's time zone, not the device's (`clock.js`: `ZONES` maps market → IANA zone, e.g. `PL` → `Europe/Warsaw`; unknown markets use device time). `todayKey()`, `startOfDay()` and the till roll's date and times all use it; `startOfDay()` re-checks the UTC offset at midnight so daylight saving days are right.
+- `day.key` is the market's date. `rollover()` resets totals at the market's midnight but keeps `lastId` so the stream isn't replayed.
 - "Reset today" keeps `ids` and `lastId` so already-seen messages aren't counted again.
 - `day.topic` records the topic. Loading with a different topic (settings or `?topic=`) starts a fresh day, so a `lastId` from another topic is never used as `?since=`.
 

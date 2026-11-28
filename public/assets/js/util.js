@@ -16,7 +16,6 @@ export function fmt(v, cur) {
     return `${v.toFixed(2)} ${cur}`;
   }
 }
-export const fmtTime = (unix) => new Date(unix * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 // Accepts numbers and strings with currency symbols or a decimal comma ("49,90", "49.90 zł").
 export function toNum(v) {
