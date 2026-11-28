@@ -17,7 +17,7 @@ const retake = () => { if (awake) keepAwake(); };
 document.addEventListener("visibilitychange", retake);
 document.addEventListener("fullscreenchange", retake);
 // Some browsers refuse the lock without a recent user gesture, so retry on input too.
-["pointerdown", "keydown"].forEach((ev) => addEventListener(ev, retake, { passive: true }));
+["pointerdown", "touchstart", "keydown"].forEach((ev) => addEventListener(ev, retake, { passive: true }));
 // Safety net in case a release went unnoticed.
 setInterval(retake, 60000);
 
@@ -30,7 +30,14 @@ export function wake() {
 }
 ["mousemove", "pointerdown", "keydown", "touchstart"].forEach((ev) => addEventListener(ev, wake, { passive: true }));
 
+// Prefixed versions for older Safari (iPad on iOS 12).
 $("fsBtn").addEventListener("click", () => {
-  if (document.fullscreenElement) document.exitFullscreen?.();
-  else document.documentElement.requestFullscreen?.().catch(() => {});
+  const d = document, el = d.documentElement;
+  try {
+    if (d.fullscreenElement || d.webkitFullscreenElement) (d.exitFullscreen || d.webkitExitFullscreen || (() => {})).call(d);
+    else {
+      const p = (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
+      if (p && p.catch) p.catch(() => {});
+    }
+  } catch {}
 });

@@ -43,7 +43,7 @@ export function recordMessage(m) {
   day.lastId = m.id;
   if (m.time * 1000 < startOfDay()) { saveDay(); return; }
 
-  const sale = parseSale(m.message ?? "");
+  const sale = parseSale(m.message != null ? m.message : "");
   if (!sale) { saveDay(); return; }
 
   day.total += sale.eur;

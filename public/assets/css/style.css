@@ -12,6 +12,7 @@
   --muted: #4C6658;
   --line: rgba(19, 41, 31, .18);
   --red: #A3301F;
+  --overlay: rgba(226, 235, 228, .82); /* --bg at 82% */
   --display: "Big Shoulders Display", "Oswald", "Arial Narrow", Impact, sans-serif;
   --body: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
@@ -31,6 +32,7 @@
     --muted: #93AD9F;
     --line: rgba(237, 230, 211, .16);
     --red: #E8735E;
+    --overlay: rgba(15, 42, 33, .82);
   }
 }
 *, *::before, *::after { box-sizing: inherit; }
@@ -52,13 +54,13 @@ button, input, textarea, select { font: inherit; color: inherit; }
   height: 100%;
   display: grid;
   grid-template-columns: 1fr minmax(240px, 26vw);
-  gap: clamp(16px, 3vw, 48px);
-  padding: clamp(16px, 3vw, 48px);
+  gap: 31px; gap: clamp(16px, 3vw, 48px);
+  padding: 31px; padding: clamp(16px, 3vw, 48px);
 }
 .main { display: flex; flex-direction: column; min-width: 0; }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
-.status { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: clamp(13px, 1.1vw, 16px); }
+.status { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; font-size: clamp(13px, 1.1vw, 16px); }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
 .status[data-state="live"] .dot { background: #3FBF7F; box-shadow: 0 0 0 0 rgba(63,191,127,.6); animation: pulse 2.4s infinite; }
 .status[data-state="reconnecting"] .dot, .status[data-state="connecting"] .dot { background: var(--brass); }
@@ -76,22 +78,22 @@ body.idle { cursor: none; }
 .icon-btn svg { width: 20px; height: 20px; }
 
 .today { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 0; }
-.today-label { font-family: var(--display); font-weight: 600; font-size: clamp(20px, 2.4vw, 40px); color: var(--muted); letter-spacing: .02em; margin: 0 0 .2em; display: flex; align-items: center; gap: .4em; }
+.today-label { font-family: var(--display); font-weight: 600; font-size: 25px; font-size: clamp(20px, 2.4vw, 40px); color: var(--muted); letter-spacing: .02em; margin: 0 0 .2em; display: flex; align-items: center; gap: .4em; }
 .flag { display: inline-flex; height: .8em; border-radius: .08em; overflow: hidden; box-shadow: 0 0 0 1px var(--line), 0 2px 6px rgba(0,0,0,.25); }
 .flag svg { display: block; height: 100%; width: auto; }
 .flag[hidden] { display: none; }
 .total {
   font-family: var(--display); font-weight: 900; line-height: .86;
-  font-size: clamp(64px, 14vw, 260px);
+  font-size: 143px; font-size: clamp(64px, 14vw, 260px);
   color: var(--brass); letter-spacing: -.01em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.count { margin-top: .6em; font-size: clamp(16px, 1.8vw, 30px); color: var(--text); }
+.count { margin-top: .6em; font-size: 18px; font-size: clamp(16px, 1.8vw, 30px); color: var(--text); }
 .count strong { font-family: var(--display); font-weight: 800; font-size: 1.4em; color: var(--brass-hi); margin-right: .15em; }
 
 /* ---------- receipt roll ---------- */
-.side { display: flex; flex-direction: column; gap: clamp(12px, 1.6vw, 24px); min-height: 0; min-width: 0; }
+.side { display: flex; flex-direction: column; gap: 16px; gap: clamp(12px, 1.6vw, 24px); min-height: 0; min-width: 0; }
 .roll {
   flex: 0 1 auto;
   min-height: 0;
@@ -111,7 +113,7 @@ body.idle { cursor: none; }
 .roll ol { list-style: none; margin: 0; padding: 0; overflow: hidden; }
 .roll li {
   display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline;
-  padding: 8px 0; border-bottom: 1px dotted #D8D0BE; font-size: clamp(14px, 1.15vw, 18px);
+  padding: 8px 0; border-bottom: 1px dotted #D8D0BE; font-size: 14px; font-size: clamp(14px, 1.15vw, 18px);
 }
 .roll li.fresh { animation: print .6s ease-out; }
 @keyframes print { from { transform: translateY(-14px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -127,8 +129,8 @@ body.idle { cursor: none; }
   background: var(--paper); padding: 8px 8px 10px; border-radius: 10px;
   box-shadow: 0 10px 24px rgba(0,0,0,.2); text-align: center;
 }
-.qr svg { display: block; width: clamp(192px, 16vw, 300px); height: auto; }
-.qr figcaption { font-size: 12px; color: #6B6457; margin-top: 4px; max-width: clamp(192px, 16vw, 300px); line-height: 1.3; }
+.qr svg { display: block; width: 192px; width: clamp(192px, 16vw, 300px); height: auto; }
+.qr figcaption { font-size: 12px; color: #6B6457; margin-top: 4px; max-width: 192px; max-width: clamp(192px, 16vw, 300px); line-height: 1.3; }
 .qr[hidden] { display: none; }
 .qr-copy {
   margin-top: 6px; width: 100%; padding: 5px 8px; border-radius: 6px; cursor: pointer;
@@ -140,53 +142,53 @@ body.idle .qr-copy { opacity: 0; pointer-events: none; }
 
 /* ---------- celebration ---------- */
 .burst {
-  position: fixed; inset: 0; display: grid; place-items: center;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: grid; place-items: center;
+  background: var(--overlay);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   opacity: 0; pointer-events: none; transition: opacity .35s; z-index: 20;
 }
 .burst.on { opacity: 1; }
 .register {
   background: linear-gradient(var(--brass-hi), var(--brass));
-  padding: clamp(10px, 1.4vw, 20px);
+  padding: 14px; padding: clamp(10px, 1.4vw, 20px);
   border-radius: 14px 14px 6px 6px;
   box-shadow: 0 30px 60px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.35);
   position: relative; z-index: 2;
 }
 .window {
   background: #0B1A14; border-radius: 6px;
-  padding: clamp(10px, 1.4vw, 20px) clamp(12px, 1.8vw, 26px);
-  display: flex; gap: clamp(4px, .5vw, 8px); overflow: hidden;
+  padding: 14px 18px; padding: clamp(10px, 1.4vw, 20px) clamp(12px, 1.8vw, 26px);
+  display: flex; gap: 5px; gap: clamp(4px, .5vw, 8px); overflow: hidden;
   box-shadow: inset 0 6px 18px rgba(0,0,0,.6);
 }
 .tab {
   font-family: var(--display); font-weight: 900; color: var(--ink);
   background: linear-gradient(#FFFFFF, var(--paper) 55%, #E3DBC6);
-  font-size: clamp(56px, 12vw, 220px); line-height: 1;
+  font-size: 123px; font-size: clamp(56px, 12vw, 220px); line-height: 1;
   min-width: .62em; text-align: center; padding: .06em .08em 0;
   border-radius: 4px;
   transform: translateY(110%);
   box-shadow: inset 0 -4px 0 rgba(0,0,0,.12);
 }
-.tab.sym { min-width: auto; padding-inline: .1em; }
+.tab.sym { min-width: auto; padding-left: .1em; padding-right: .1em; }
 .tab.gap { background: transparent; box-shadow: none; min-width: .2em; }
 .burst.on .tab { animation: popup .55s cubic-bezier(.2, 1.6, .4, 1) forwards; animation-delay: calc(var(--i) * 55ms); }
 @keyframes popup { to { transform: translateY(0); } }
 .burst-label {
   position: absolute; left: 0; right: 0; bottom: 14vh; text-align: center;
-  font-size: clamp(18px, 2.2vw, 36px); color: var(--text); z-index: 2;
+  font-size: 23px; font-size: clamp(18px, 2.2vw, 36px); color: var(--text); z-index: 2;
   opacity: 0; transition: opacity .4s .5s;
 }
 .burst.on .burst-label { opacity: 1; }
-canvas#coins { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 21; }
+canvas#coins { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 21; }
 
 /* ---------- start gate ---------- */
 .gate {
-  position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; text-align: center;
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 30; display: grid; place-items: center; text-align: center;
   background: var(--bg); padding: 24px; cursor: pointer;
 }
-.gate h1 { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 10vw, 150px); color: var(--brass); margin: 0; line-height: .9; }
-.gate p { color: var(--muted); font-size: clamp(16px, 1.6vw, 22px); max-width: 34ch; margin: 18px auto 28px; line-height: 1.45; }
+.gate h1 { font-family: var(--display); font-weight: 900; font-size: 102px; font-size: clamp(56px, 10vw, 150px); color: var(--brass); margin: 0; line-height: .9; }
+.gate p { color: var(--muted); font-size: 16px; font-size: clamp(16px, 1.6vw, 22px); max-width: 34ch; margin: 18px auto 28px; line-height: 1.45; }
 .gate .start {
   border: 0; border-radius: 999px; padding: 16px 34px; cursor: pointer;
   background: var(--brass); color: #10241B; font-weight: 600; font-size: 18px;
@@ -199,6 +201,11 @@ dialog {
   background: var(--paper); color: var(--ink); box-shadow: 0 40px 80px rgba(0,0,0,.4);
 }
 dialog::backdrop { background: rgba(5, 15, 11, .6); }
+/* Browsers without <dialog> (Safari < 15.4): settings.js adds .fallback and a backdrop div. */
+dialog:not([open]) { display: none; }
+dialog.fallback { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0; z-index: 41; }
+.dialog-backdrop { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(5, 15, 11, .6); z-index: 40; }
+.dialog-backdrop[hidden] { display: none; }
 dialog form { padding: 28px; display: grid; gap: 18px; max-height: calc(100vh - 40px); overflow: auto; }
 dialog h2 { font-family: var(--display); font-weight: 800; font-size: 32px; margin: 0; }
 .field { display: grid; gap: 6px; }
@@ -222,6 +229,17 @@ dialog h2 { font-family: var(--display); font-weight: 800; font-size: 32px; marg
 .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
 .actions .left { display: flex; gap: 8px; flex-wrap: wrap; }
 .error { color: #A3301F; font-size: 13px; margin: 0; min-height: 1em; }
+
+/* No flex gap before Safari 14.1 (e.g. iOS 12). inset arrived in the same
+   releases, so it is used as the feature test. Margins stand in for gap. */
+@supports not (inset: 0) {
+  .dot, .check input { margin-right: 10px; }
+  .controls > * + *, .row > * + *, .actions .left > * + * { margin-left: 8px; }
+  .actions > * { margin-bottom: 8px; }
+  .flag { margin-right: .4em; }
+  .window > * + * { margin-left: 6px; }
+  .roll { margin-bottom: 16px; }
+}
 
 @media (max-width: 760px) {
   body { overflow: auto; }

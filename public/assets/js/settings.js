@@ -9,7 +9,30 @@ import { connect } from "./ntfy.js";
 
 const dlg = $("settings"), form = $("form");
 
-export const isSettingsOpen = () => dlg.open;
+// Older browsers (Safari < 15.4, e.g. iOS 12) have no <dialog>: show it with a
+// class and our own backdrop instead, closing on Escape or a backdrop tap.
+const nativeDialog = typeof dlg.showModal === "function";
+let backdrop = null;
+function showDlg() {
+  if (nativeDialog) return dlg.showModal();
+  if (!backdrop) {
+    backdrop = document.createElement("div");
+    backdrop.className = "dialog-backdrop";
+    backdrop.addEventListener("click", closeDlg);
+    document.body.appendChild(backdrop);
+  }
+  backdrop.hidden = false;
+  dlg.classList.add("fallback");
+  dlg.setAttribute("open", "");
+}
+function closeDlg() {
+  if (nativeDialog) return dlg.close();
+  dlg.removeAttribute("open");
+  if (backdrop) backdrop.hidden = true;
+}
+if (!nativeDialog) addEventListener("keydown", (e) => { if (e.key === "Escape" && isSettingsOpen()) closeDlg(); });
+
+export const isSettingsOpen = () => dlg.hasAttribute("open");
 
 function randomTopic() {
   const abc = "abcdefghijkmnpqrstuvwxyz23456789";
@@ -38,7 +61,7 @@ export function openSettings() {
   form.sound.checked = cfg.sound;
   $("formError").textContent = "";
   updateHook();
-  dlg.showModal();
+  showDlg();
 }
 
 form.topic.addEventListener("input", updateHook);
@@ -50,12 +73,13 @@ $("genBtn").addEventListener("click", () => { form.topic.value = randomTopic(); 
 $("copyBtn").addEventListener("click", async () => {
   const t = $("hookUrl").textContent;
   if (!t.startsWith("https://")) return;
-  try { await navigator.clipboard.writeText(t); $("copyBtn").textContent = "Copied"; setTimeout(() => ($("copyBtn").textContent = "Copy URL"), 1500); } catch {}
+  try { await navigator.clipboard.writeText(t); $("copyBtn").textContent = "Copied"; setTimeout(() => ($("copyBtn").textContent = "Copy URL"), 1500); }
+  catch { window.prompt("Copy this URL:", t); }
 });
 $("testBtn").addEventListener("click", () => {
   audio();
   const amount = Math.round((20 + Math.random() * 180) * 100) / 100;
-  dlg.close();
+  closeDlg();
   const m = cfg.markets[cfg.market];
   enqueue({ amount, currency: m.currency, market: cfg.market, eur: Math.round(amount * m.rate * 100) / 100, label: "", test: true });
 });
@@ -82,7 +106,7 @@ form.addEventListener("submit", (e) => {
   if (changedStream) startFreshDay();
   renderTotals();
   renderQr();
-  dlg.close();
+  closeDlg();
   connect();
 });
 $("settingsBtn").addEventListener("click", openSettings);

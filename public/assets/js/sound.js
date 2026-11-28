@@ -8,6 +8,8 @@ export function audio() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     actx = new AC();
+    // Old iOS Safari only unlocks audio once something plays inside the tap.
+    try { const b = actx.createBufferSource(); b.buffer = actx.createBuffer(1, 1, 22050); b.connect(actx.destination); b.start(0); } catch {}
   }
   if (actx.state === "suspended") actx.resume();
   return actx;
@@ -22,7 +24,7 @@ function bell(a, out, t, vol, base) {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol * amp * .22, t + 0.006);
     g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
-    o.connect(g).connect(out);
+    o.connect(g); g.connect(out);
     o.start(t); o.stop(t + decay + .05);
   });
 }
@@ -35,7 +37,7 @@ function noise(a, out, t, dur, freq, vol) {
   const n = a.createBufferSource(); n.buffer = buf;
   const bp = a.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = freq; bp.Q.value = .9;
   const g = a.createGain(); g.gain.value = vol;
-  n.connect(bp).connect(g).connect(out);
+  n.connect(bp); bp.connect(g); g.connect(out);
   n.start(t);
 }
 
@@ -53,7 +55,7 @@ export function kaching(big) {
   o.frequency.exponentialRampToValueAtTime(55, t + .2);
   g.gain.setValueAtTime(.55, t + .05);
   g.gain.exponentialRampToValueAtTime(.0001, t + .24);
-  o.connect(g).connect(out); o.start(t + .05); o.stop(t + .26);
+  o.connect(g); g.connect(out); o.start(t + .05); o.stop(t + .26);
   noise(a, out, t + .09, .12, 5200, .35);
 
   // "ching": the bell
@@ -70,7 +72,7 @@ export function kaching(big) {
       cg.gain.setValueAtTime(.0001, ct);
       cg.gain.exponentialRampToValueAtTime(.08, ct + .004);
       cg.gain.exponentialRampToValueAtTime(.0001, ct + .18);
-      co.connect(cg).connect(out); co.start(ct); co.stop(ct + .2);
+      co.connect(cg); cg.connect(out); co.start(ct); co.stop(ct + .2);
     }
   }
 }
