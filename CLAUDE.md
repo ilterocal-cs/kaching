@@ -29,24 +29,7 @@ Hosted on GitHub Pages: https://ilterocal-cs.github.io/kaching/ (deployed from `
 
 ## Code map (`public/assets/js/`)
 
-| File | Responsibility |
-| --- | --- |
-| `main.js` | Entry point: start gate (unlocks audio), 30 s `rollover` interval, then `renderTotals`, `renderRoll`, `renderQr`, `connect` |
-| `util.js` | No dependencies: `BASE` (`"EUR"`), `$`, `sleep`, `reducedMotion`, `fmt(value, currency)` (omitted currency = EUR), `fmtTime`, `toNum`, `cleanStr` |
-| `storage.js` | `LS_CFG`, `LS_DAY`, `load` / `store` wrappers around `localStorage` (never throw) |
-| `config.js` | `defaults`, `cfg` (merged saved config + URL params `topic`, `markets`, `market`, `big`, `sound=0`), `setCfg`, `TOPIC_RE`, `parseMarkets`, `marketsToText`, `setupUrl` |
-| `day.js` | `todayKey`, `startOfDay`, `freshDay`, `day` (reset if date, topic or market differs), `setDay`, `saveDay` |
-| `sales.js` | `parseSale(text)`: ntfy message body → sale or `null` |
-| `ledger.js` | `recordMessage(m)` (dedupe, totals, live vs backfill), `rollover`, `resetToday`, `startFreshDay` |
-| `ntfy.js` | `connect()`: SSE stream, status, own reconnect with the latest `lastId` |
-| `celebrate.js` | `enqueue(sale)`, `isCelebrating()`, queue, pop-up tabs, label |
-| `ui.js` | `renderTotals` (also the flag), `animateTotalTo` (count-up), `resetShown`, `syncTotals`, `renderRoll`, `setStatus`, `renderQr` |
-| `sound.js` | `audio()` (create/resume `AudioContext`), `kaching(big)` |
-| `coins.js` | Canvas sizing, `coinBurst(n)` |
-| `flags.js` | `flagSvg(market)`: inline SVG flag per market code (simplified, e.g. Spain without coat of arms), `""` if unknown |
-| `qr.js` | `qrMatrix(text)`: built-in QR encoder (byte mode, level M, versions 1–15, ≤ 412 bytes). Pure, no DOM |
-| `settings.js` | `<dialog>` form, `openSettings`, `isSettingsOpen`, market dropdown from the markets textarea, topic generator, copy URL, test loan, reset today |
-| `screen.js` | `keepAwake` (Wake Lock), `wake` (hides controls and cursor after 3.5 s), full-screen button |
+One ES module per job; each file starts with a comment saying what it does. `main.js` is the entry point.
 
 Shared state: `cfg` (config.js) and `day` (day.js) are exported `let` live bindings. Importers can read and mutate their fields but must replace them only via `setCfg()` / `setDay()`. The shown (animated) total lives privately in `ui.js`.
 
@@ -106,33 +89,9 @@ Dependency direction (no cycles): `util`, `storage`, `qr`, `flags` → `config` 
 - "Reset today" keeps `ids` and `lastId` so already-seen messages aren't counted again.
 - `day.topic` records the topic. Loading with a different topic (settings or `?topic=`) starts a fresh day, so a `lastId` from another topic is never used as `?since=`.
 
-## localStorage schema
+## localStorage
 
-```js
-// "kaching.cfg.v2"
-{
-  topic: string,
-  market: string,                                   // selected market, e.g. "PL"
-  markets: { [market]: { currency: string, rate: number } },  // rate to EUR
-  big: number,                                      // EUR, default 4000
-  sound: boolean
-}
-
-// "kaching.day.v2"
-{
-  key: "YYYY-M-D",          // local date
-  topic: string,            // topic this day state belongs to
-  market: string,           // market this day state belongs to
-  total: number,            // EUR
-  count: number,
-  ids: string[],            // seen ntfy message IDs, max 3000
-  lastId: string | null,    // last ntfy message ID, used for ?since=
-  sales: [{ t: unixSeconds, amount: number, currency: string, market: string,
-             eur: number, label: string }] // newest first, max 60, amount in local currency
-}
-```
-
-If you change either shape incompatibly, bump the key suffix (`.v2`) rather than migrating.
+Keys `kaching.cfg.v2` (shape: `defaults` in `config.js`) and `kaching.day.v2` (shape: `freshDay()` in `day.js`). If you change either shape incompatibly, bump the key suffix (`.v2`) rather than migrating.
 
 ## Design
 
